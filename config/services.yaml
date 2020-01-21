@@ -39,7 +39,7 @@ services:
     public: true
   adimeo_data_suite_stat_es_server:
     class: AdimeoDataSuite\Index\StatIndexManager
-    arguments: ["%env(STAT_ELASTICSEARCH_SERVER_URL)%"]
+    arguments: ["%env(STAT_ELASTICSEARCH_SERVER_URL)%", "%env(ADS_STAT_INDEX_NB_SHARDS)%", "%env(ADS_STAT_INDEX_NB_REPLICAS)%"]
     public: true
   adimeo_data_suite_backups_es_server:
     class: AdimeoDataSuite\Index\BackupsManager
@@ -52,6 +52,10 @@ services:
   adimeo_data_suite_pdo_pool:
     class: AdimeoDataSuite\PDO\PDOPool
     public: true
+  App\Controller\SecurityController:
+    arguments: ["%env(ADS_INDEX_NB_SHARDS)%", "%env(ADS_INDEX_NB_REPLICAS)%"]
+  App\Controller\SearchAPIController:
+    arguments: ["%env(ADS_API_APPLY_BOOSTING)%"]
 
   adimeodatasource.datasource.textfileparser:
       class: AdimeoDataSuite\Datasource\TextFileParser
@@ -236,6 +240,24 @@ services:
       - { name: adimeodatasuite.stat }
   adimeodatasuite.stat.responsetimestatcompiler:
     class: AdimeoDataSuite\Stat\ResponseTimeStatCompiler
+    arguments: ["@adimeo_data_suite_stat_es_server"]
+    public: true
+    tags:
+      - { name: adimeodatasuite.stat }
+  adimeodatasuite.stat.querystatcompiler:
+    class: AdimeoDataSuite\Stat\QueryStatCompiler
+    arguments: ["@adimeo_data_suite_stat_es_server"]
+    public: true
+    tags:
+      - { name: adimeodatasuite.stat }
+  adimeodatasuite.stat.noresultsquerystatcompiler:
+    class: AdimeoDataSuite\Stat\NoResultsQueryStatCompiler
+    arguments: ["@adimeo_data_suite_stat_es_server"]
+    public: true
+    tags:
+      - { name: adimeodatasuite.stat }
+  adimeodatasuite.stat.popularresultsstatcompiler:
+    class: AdimeoDataSuite\Stat\PopularResultsStatCompiler
     arguments: ["@adimeo_data_suite_stat_es_server"]
     public: true
     tags:

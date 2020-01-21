@@ -366,7 +366,7 @@
       });
     }
 
-    $('#matching-list-size-selector + a').click(function (e) {
+    $('a.init-ml-from-index-action').click(function (e) {
       e.preventDefault();
       if ($('#matching-list-field-selector').val() != '' && $('#matching-list-size-selector').val() != '') {
         window.location = $(this).attr('href') + '&field=' + encodeURIComponent($('#matching-list-field-selector').val()) + '&size=' + encodeURIComponent($('#matching-list-size-selector').val());
@@ -687,11 +687,20 @@
             if($('#mapping-definition-field-include-transliterated').is(':checked')) {
               if(typeof json[field_name].fields === 'undefined')
                 json[field_name].fields = {};
-              json[field_name].fields.transliterated = {
-                type: "string",
-                analyzer: "transliterator",
-                store: true
-              };
+              if(__elastic_server_version < 5) {
+                json[field_name].fields.transliterated = {
+                  type: "string",
+                  analyzer: "transliterator",
+                  store: true
+                };
+              }
+              else{
+                json[field_name].fields.transliterated = {
+                  type: "keyword",
+                  store: true,
+                  normalizer: "transliterator"
+                };
+              }
             }
           }
           json[field_name].store = $('#mapping-definition-field-store').val() != 'false';
